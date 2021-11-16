@@ -111,6 +111,9 @@
 1. [ATHR] Improvement of ATHR laws - @IbrahimK42(IbrahimK42), @aguther (Andreas Guther)
 1. [MISC] Fixed flap configuration in final.flt and runway.flt files -  @donstim (donbikes#4084)
 1. [EFB] Added Reset to Defaults button to EFB throttle calibration page - @frankkopp (Cdr_Maverick#6475)
+1. [TCAS] Implemented traffic advisories, resolution advisories, and collision avoidance logic - @wpine215 (Iceman) @2hwk (2Cas#1022)
+1. [PFD] Implemented TCAS guidance on vertical speed tape - @wpine215 (Iceman)
+1. [SOUNDS] Connected TCAS TA/RA logic to TCAS Wwise events - @wpine215 (Iceman)  @2hwk (2Cas#1022)
 
 ## 0.7.0
 
