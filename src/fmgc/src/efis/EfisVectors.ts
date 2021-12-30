@@ -67,9 +67,9 @@ export class EfisVectors {
 
         const engagedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number') as LateralMode;
         const armedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'Enum');
-        const navArmed = (armedLateralMode >> 0) & 1;
+        const navArmed = armedLateralMode !== 0;
 
-        const transmitActive = engagedLateralMode === LateralMode.NAV || navArmed;
+        const transmitActive = engagedLateralMode === LateralMode.NAV || engagedLateralMode === LateralMode.LOC_CPT || engagedLateralMode === LateralMode.LOC_TRACK || navArmed;
         const clearActive = !transmitActive && this.currentActiveVectors.length > 0;
 
         if (transmitActive) {
