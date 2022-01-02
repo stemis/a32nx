@@ -108,7 +108,7 @@ export class FixedRadiusTransition extends Transition {
         const defaultTurnDirection = this.sweepAngle >= 0 ? TurnDirection.Right : TurnDirection.Left;
         const forcedTurn = (this.nextLeg.constrainedTurnDirection === TurnDirection.Left || this.nextLeg.constrainedTurnDirection === TurnDirection.Right)
             && defaultTurnDirection !== this.nextLeg.constrainedTurnDirection;
-        const requiredTurnDistance = this.radius * Math.tan(Math.abs(this.sweepAngle)) + 0.1;
+        const requiredTurnDistance = this.radius * Math.tan(Math.abs(this.sweepAngle * MathUtils.DEGREES_TO_RADIANS)) + 0.1;
         const tooBig = this.previousLeg.distanceToTermFix < requiredTurnDistance;
         const notLinedUp = Math.abs(prevLegTermDistanceToNextLeg) >= 0.1; // "reasonable" distance
 
