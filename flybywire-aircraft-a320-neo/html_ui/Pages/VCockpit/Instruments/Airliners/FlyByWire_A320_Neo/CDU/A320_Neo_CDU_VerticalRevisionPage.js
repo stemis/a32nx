@@ -1,5 +1,5 @@
 class CDUVerticalRevisionPage {
-    static ShowPage(mcdu, waypoint) {
+    static ShowPage(mcdu, waypoint, verticalWaypoint) {
         const waypointInfo = waypoint.infos;
         if (waypointInfo instanceof WayPointInfo) {
             mcdu.clearDisplay();
@@ -47,6 +47,9 @@ class CDUVerticalRevisionPage {
                     break;
                 }
             }
+
+            const altError = this.formatAltErrorTitleAndValue(waypoint, verticalWaypoint);
+
             mcdu.setTemplate([
                 ["VERT REV {small}AT{end}{green} " + waypointIdent + "{end}"],
                 [""],
@@ -55,8 +58,8 @@ class CDUVerticalRevisionPage {
                 [climbSpeedLimitCell, "RTA>[color]inop"],
                 ["\xa0SPD CSTR", "ALT CSTR\xa0"],
                 [speedConstraint ? speedConstraint + "[color]magenta" : "*[\xa0\xa0\xa0][color]cyan", altitudeConstraint ? altitudeConstraint + "[color]magenta" : "[\xa0\xa0\xa0\xa0]*[color]cyan"],
-                ["MACH/START WPT[color]inop", ""],
-                [`\xa0{inop}[\xa0]/{small}${waypointIdent}{end}{end}`, ""],
+                ["MACH/START WPT[color]inop", altError[0]],
+                [`\xa0{inop}[\xa0]/{small}${waypointIdent}{end}{end}`, altError[1]],
                 [""],
                 ["<WIND", "STEP ALTS>[color]inop"],
                 [""],
@@ -67,7 +70,7 @@ class CDUVerticalRevisionPage {
             mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.setSpeedLimit(undefined, undefined);
-                    this.ShowPage(mcdu, waypoint);
+                    this.ShowPage(mcdu, waypoint, verticalWaypoint);
 
                     return;
                 } else if (!value || !value.includes("/")) {
@@ -96,7 +99,7 @@ class CDUVerticalRevisionPage {
                 }
 
                 mcdu.setSpeedLimit(speedLimit, speedLimitAlt);
-                this.ShowPage(mcdu, waypoint);
+                this.ShowPage(mcdu, waypoint, verticalWaypoint);
             }; // CLB SPD LIM
             mcdu.onRightInput[1] = () => {}; // RTA
             mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
@@ -105,7 +108,7 @@ class CDUVerticalRevisionPage {
                     if (speed >= 0) {
                         mcdu.flightPlanManager.setWaypointSpeed(speed, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
                             mcdu.updateConstraints();
-                            this.ShowPage(mcdu, waypoint);
+                            this.ShowPage(mcdu, waypoint, verticalWaypoint);
                         });
                     }
                 } else {
@@ -142,7 +145,7 @@ class CDUVerticalRevisionPage {
                         mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, code);
                         mcdu.flightPlanManager.setWaypointAltitude(altitude, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
                             mcdu.updateConstraints();
-                            this.ShowPage(mcdu, waypoint);
+                            this.ShowPage(mcdu, waypoint, verticalWaypoint);
                         });
                     }
                 } else {
@@ -153,7 +156,7 @@ class CDUVerticalRevisionPage {
             mcdu.onLeftInput[4] = () => {
                 //TODO: show appropriate wind page based on waypoint
                 CDUWindPage.Return = () => {
-                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint);
+                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, verticalWaypoint);
                 };
                 CDUWindPage.ShowPage(mcdu);
             }; // WIND
@@ -169,5 +172,30 @@ class CDUVerticalRevisionPage {
             return "FL" + Math.round(constraint / 100);
         }
         return constraint;
+    }
+
+    static formatAltErrorTitleAndValue(waypoint, verticalWaypoint) {
+        const empty = ["", ""];
+
+        if (!waypoint || !verticalWaypoint) {
+            return empty;
+        }
+
+        // No constraint
+        if (waypoint.legAltitudeDescription === 0 || verticalWaypoint.isAltitudeConstraintMet) {
+            return empty;
+        }
+
+        // Weird prediction error
+        if (!isFinite(verticalWaypoint.altError)) {
+            return empty;
+        }
+
+        let formattedAltError = (Math.round(verticalWaypoint.altError / 10) * 10).toFixed(0);
+        if (verticalWaypoint.altError > 0) {
+            formattedAltError = "+" + formattedAltError;
+        }
+
+        return ["ALT ERROR\xa0", "{green}{small}" + formattedAltError + "{end}{end}"];
     }
 }

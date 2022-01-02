@@ -409,7 +409,7 @@ class CDUFlightPlanPage {
                             };
                             mcdu.onRightInput[rowI] = async () => {
                                 if (waypoint) {
-                                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint);
+                                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, verticalWaypoint);
                                 }
                             };
                         }
@@ -533,7 +533,7 @@ class CDUFlightPlanPage {
 
                 addRskAt(rowI, () => mcdu.getDelaySwitchPage(),
                     async (_value) => {
-                        CDUVerticalRevisionPage.ShowPage(mcdu, wp);
+                        CDUVerticalRevisionPage.ShowPage(mcdu, wp, verticalWaypoint);
                     });
 
             } else if (pwp) {

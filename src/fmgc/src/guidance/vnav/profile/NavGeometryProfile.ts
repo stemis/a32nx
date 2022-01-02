@@ -16,6 +16,7 @@ export interface VerticalWaypointPrediction {
     speedConstraint: SpeedConstraint,
     isAltitudeConstraintMet: boolean,
     isSpeedConstraintMet: boolean,
+    altError: number,
 }
 
 export enum VerticalCheckpointReason {
@@ -182,6 +183,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
                 isAltitudeConstraintMet: this.isAltitudeConstraintMet(altitude, leg.altitudeConstraint),
                 speedConstraint: leg.speedConstraint,
                 isSpeedConstraintMet: this.isSpeedConstraintMet(speed, leg.speedConstraint),
+                altError: this.computeAltError(altitude, leg.altitudeConstraint),
             });
         }
 
@@ -249,7 +251,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
         }
     }
 
-    private isSpeedConstraintMet(speed: Feet, constraint?: SpeedConstraint): boolean {
+    private isSpeedConstraintMet(speed: Knots, constraint?: SpeedConstraint): boolean {
         if (!constraint) {
             return true;
         }
@@ -262,8 +264,34 @@ export class NavGeometryProfile extends BaseGeometryProfile {
         case SpeedConstraintType.atOrAbove:
             return speed - constraint.speed > -5;
         default:
-            console.error('Invalid altitude constraint type');
+            console.error('Invalid speed constraint type');
             return null;
+        }
+    }
+
+    private computeAltError(predictedAltitude: Feet, constraint?: AltitudeConstraint): number {
+        if (!constraint) {
+            return 0;
+        }
+
+        switch (constraint.type) {
+        case AltitudeConstraintType.at:
+            return predictedAltitude - constraint.altitude1;
+        case AltitudeConstraintType.atOrAbove:
+            return Math.min(predictedAltitude - constraint.altitude1, 0);
+        case AltitudeConstraintType.atOrBelow:
+            return Math.max(predictedAltitude - constraint.altitude1, 0);
+        case AltitudeConstraintType.range:
+            if (predictedAltitude >= constraint.altitude1) {
+                return predictedAltitude - constraint.altitude1;
+            } if (predictedAltitude <= constraint.altitude2) {
+                return predictedAltitude - constraint.altitude1;
+            }
+
+            return 0;
+        default:
+            console.error('Invalid altitude constraint type');
+            return 0;
         }
     }
 }
